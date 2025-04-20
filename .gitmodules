@@ -1,0 +1,6 @@
+[submodule "ros2_ws/src/topic_based_ros2_control"]
+	path = ros2_ws/src/topic_based_ros2_control
+	url = https://github.com/PickNikRobotics/topic_based_ros2_control.git
+[submodule "suppliment_files/robots_usd"]
+	path = suppliment_files/robots_usd
+	url = https://github.com/konu-droid/robots_usd.git

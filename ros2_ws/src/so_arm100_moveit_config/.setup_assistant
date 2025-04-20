@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: so_5dof_arm100
+    relative_path: urdf/so_5dof_arm100.urdf
+  srdf:
+    relative_path: config/so_5dof_arm100.srdf
+  package_settings:
+    author_name: Mohan Konugolu
+    author_email: konudroid@gmail.com
+    generated_timestamp: 1745082660
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
