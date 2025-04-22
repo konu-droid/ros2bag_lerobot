@@ -47,7 +47,7 @@ except ImportError:
 IMAGE_TOPIC = "/rgb"
 TASK_DESCRIPTION_TOPIC = "/task"
 JOINT_STATES_TOPIC = "/joint_states"
-JOINT_COMMAND_TOPIC = "/joint_trajectory_controller/joint_trajectory"
+JOINT_COMMAND_TOPIC = "/joint_command"
 
 # --- Node and Timing ---
 NODE_NAME = "gr00t_robot_controller_node"
@@ -56,7 +56,7 @@ PROCESSING_TIMER_PERIOD = 0.1 # seconds (adjust as needed for inference speed)
 
 # --- Gr00t Inference Server ---
 INFERENCE_SERVER_HOST = "localhost"
-INFERENCE_SERVER_PORT = 5555
+INFERENCE_SERVER_PORT = 5556
 # Define expected image size for the policy
 POLICY_IMAGE_WIDTH = 1280
 POLICY_IMAGE_HEIGHT = 720
@@ -233,7 +233,7 @@ class RobotControllerNode(Node):
         self.joint_state_subscriber = self.create_subscription(JointState, JOINT_STATES_TOPIC, self.joint_state_callback, reliable_qos_profile)
 
         # --- Publisher ---
-        self.joint_command_publisher = self.create_publisher(JointTrajectory, JOINT_COMMAND_TOPIC, reliable_qos_profile)
+        self.joint_command_publisher = self.create_publisher(JointState, JOINT_COMMAND_TOPIC, reliable_qos_profile)
 
         # --- Timer ---
         self.processing_timer = self.create_timer(PROCESSING_TIMER_PERIOD, self.process_and_publish_callback)
@@ -330,29 +330,21 @@ class RobotControllerNode(Node):
             self.get_logger().warn("Failed to extract valid joint commands from inference result. Skipping command publishing.")
             return
 
-        # --- Construct and Publish JointTrajectory Message ---
-        joint_trajectory_msg = JointTrajectory()
-        joint_trajectory_msg.header.stamp = self.get_clock().now().to_msg()
-        # IMPORTANT: Ensure self.joint_names matches the order of next_joint_positions
-        joint_trajectory_msg.joint_names = self.joint_names
-
-        point = JointTrajectoryPoint()
-        point.positions = list(next_joint_positions) # Convert numpy array to list
-        # Calculate time_from_start based on processing period or desired speed
-        # Using PROCESSING_TIMER_PERIOD implies reaching the target by the next cycle
-        point.time_from_start = rclpy.duration.Duration(seconds=PROCESSING_TIMER_PERIOD * 1.5).to_msg() # Allow a bit more time
-
-        joint_trajectory_msg.points.append(point)
+        # --- Construct and Publish Jointstate Message ---
+        joint_cmd_msg = JointState()
+        joint_cmd_msg.header.stamp = self.get_clock().now().to_msg()
+        joint_cmd_msg.name = self.joint_names
+        joint_cmd_msg.position = next_joint_positions.tolist()
 
         try:
-            self.joint_command_publisher.publish(joint_trajectory_msg)
+            self.joint_command_publisher.publish(joint_cmd_msg)
             # self.get_logger().info(f"Published joint command: {list(next_joint_positions)}") # Debug
             self.last_command_time = current_time # Update time of last successful command
         except Exception as e:
             self.get_logger().error(f"Failed to publish joint command: {e}")
 
-        # Optional: Clear the latest image message if you only want to act on new images
-        # self.latest_image_msg = None
+
+        
 
 
 def main(args=None):
