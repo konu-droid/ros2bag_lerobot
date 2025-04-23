@@ -31,6 +31,9 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from cv_bridge import CvBridge, CvBridgeError
 import cv2 # OpenCV for potential resizing/processing
 
+# Import sleep to keep the hz of the action publishing
+from time import sleep
+
 # Import the Gr00t inference client library
 try:
     from gr00t.eval.service import ExternalRobotInferenceClient
@@ -56,7 +59,7 @@ PROCESSING_TIMER_PERIOD = 0.1 # seconds (adjust as needed for inference speed)
 
 # --- Gr00t Inference Server ---
 INFERENCE_SERVER_HOST = "localhost"
-INFERENCE_SERVER_PORT = 5556
+INFERENCE_SERVER_PORT = 5555
 # Define expected image size for the policy
 POLICY_IMAGE_WIDTH = 1280
 POLICY_IMAGE_HEIGHT = 720
@@ -172,10 +175,10 @@ class Gr00tRobotInferenceClient:
                 arm_action = raw_action_chunk["action.single_arm"]
                 gripper_action = raw_action_chunk["action.gripper"]
 
-                combined_action = np.append(arm_action, gripper_action[:, np.newaxis], axis=1)[5]
+                combined_action = np.append(arm_action, gripper_action[:, np.newaxis], axis=1)
 
-                if combined_action.shape[0] != EXPECTED_JOINT_COUNT:
-                     print(f"Warning: Extracted action has {combined_action.shape[0]} elements," \
+                if combined_action[0].shape[0] != EXPECTED_JOINT_COUNT:
+                     print(f"Warning: Extracted action has {combined_action[0].shape[0]} elements," \
                            f" expected {EXPECTED_JOINT_COUNT}.")
                      # Decide how to handle this - return None, raise error, or try to use?
                      return None
@@ -330,18 +333,23 @@ class RobotControllerNode(Node):
             self.get_logger().warn("Failed to extract valid joint commands from inference result. Skipping command publishing.")
             return
 
-        # --- Construct and Publish Jointstate Message ---
-        joint_cmd_msg = JointState()
-        joint_cmd_msg.header.stamp = self.get_clock().now().to_msg()
-        joint_cmd_msg.name = self.joint_names
-        joint_cmd_msg.position = next_joint_positions.tolist()
+        for joint_actions in next_joint_positions:
+            # --- Construct and Publish Jointstate Message ---
+            joint_cmd_msg = JointState()
+            joint_cmd_msg.header.stamp = self.get_clock().now().to_msg()
+            joint_cmd_msg.name = self.joint_names
+            joint_cmd_msg.position = joint_actions.tolist()
 
-        try:
-            self.joint_command_publisher.publish(joint_cmd_msg)
-            # self.get_logger().info(f"Published joint command: {list(next_joint_positions)}") # Debug
-            self.last_command_time = current_time # Update time of last successful command
-        except Exception as e:
-            self.get_logger().error(f"Failed to publish joint command: {e}")
+            try:
+                self.joint_command_publisher.publish(joint_cmd_msg)
+                # self.get_logger().info(f"Published joint command: {list(joint_actions)}") # Debug
+                self.last_command_time = current_time # Update time of last successful command
+            except Exception as e:
+                self.get_logger().error(f"Failed to publish joint command: {e}")
+            
+            # 20 hz    
+            sleep(0.01)
+            
 
 
         
