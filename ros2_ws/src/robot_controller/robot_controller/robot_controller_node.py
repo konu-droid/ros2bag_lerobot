@@ -348,7 +348,7 @@ class RobotControllerNode(Node):
                 self.get_logger().error(f"Failed to publish joint command: {e}")
             
             # 20 hz    
-            sleep(0.01)
+            sleep(0.05)
             
 
 
