@@ -56,10 +56,31 @@
         <joint name="Wrist_Roll" value="0"/>
     </group_state>
     <group_state name="reach_cup" group="arm">
-        <joint name="Elbow" value="1.082"/>
-        <joint name="Shoulder_Pitch" value="-1.117"/>
+        <joint name="Elbow" value="0.26"/>
+        <joint name="Shoulder_Pitch" value="-0.54"/>
         <joint name="Shoulder_Rotation" value="0"/>
-        <joint name="Wrist_Pitch" value="-1.588"/>
+        <joint name="Wrist_Pitch" value="-1.83"/>
+        <joint name="Wrist_Roll" value="0"/>
+    </group_state>
+    <group_state name="base_rotate" group="arm">
+        <joint name="Elbow" value="0.1745"/>
+        <joint name="Shoulder_Pitch" value="0.1745"/>
+        <joint name="Shoulder_Rotation" value="-0.5236"/>
+        <joint name="Wrist_Pitch" value="0.3491"/>
+        <joint name="Wrist_Roll" value="0"/>
+    </group_state>
+    <group_state name="approach_rotate" group="arm">
+        <joint name="Elbow" value="-0.4887"/>
+        <joint name="Shoulder_Pitch" value="0.4887"/>
+        <joint name="Shoulder_Rotation" value="-0.5236"/>
+        <joint name="Wrist_Pitch" value="-1.2741"/>
+        <joint name="Wrist_Roll" value="0"/>
+    </group_state>
+    <group_state name="reach_cup_rotate" group="arm">
+        <joint name="Elbow" value="-0.0524"/>
+        <joint name="Shoulder_Pitch" value="-0.2793"/>
+        <joint name="Shoulder_Rotation" value="-0.5236"/>
+        <joint name="Wrist_Pitch" value="-1.5704"/>
         <joint name="Wrist_Roll" value="0"/>
     </group_state>
     <group_state name="full_close" group="gripper">
