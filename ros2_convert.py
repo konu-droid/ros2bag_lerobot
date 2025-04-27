@@ -22,9 +22,9 @@ from rosbags.typesys.stores.ros2_humble import sensor_msgs__msg__JointState as R
 # --- Configuration (MODIFY THESE FOR YOUR ROBOT AND DATA) ---
 
 # Path to your ROS bag file or directory
-BAG_FILE_PATH = '/home/konu/Documents/groot/ros2bags/so100_cup_approach'
+BAG_FILE_PATH = '/home/konu/Documents/groot/ros2bags/so100_cup_side'
 # Where to save the formatted dataset
-OUTPUT_DATASET_DIR = './isaac_so100_groot_dataset' # Changed output dir name slightly
+OUTPUT_DATASET_DIR = './isaac_so100_groot_dataset_side' # Changed output dir name slightly
 # A descriptive name for your dataset
 DATASET_NAME = "so_100_isaacsim" # Used in info.json
 # Specify the robot type (e.g., 'so100', 'franka', 'ur5')
@@ -581,7 +581,7 @@ class DatasetFormatter:
             "total_tasks": len(TASKS_DATA),
             "total_videos": total_episodes,
             "total_chunks": 1,
-            "chunks_size": total_frames,
+            "chunks_size": 1000,
             "fps": round(fps, 2),
             "splits": SPLITS,
             "data_path": DATA_PATH_TEMPLATE,

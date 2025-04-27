@@ -31,6 +31,9 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from cv_bridge import CvBridge, CvBridgeError
 import cv2 # OpenCV for potential resizing/processing
 
+# Import sleep to keep the hz of the action publishing
+from time import sleep
+
 # Import the Gr00t inference client library
 try:
     from gr00t.eval.service import ExternalRobotInferenceClient
@@ -46,8 +49,8 @@ except ImportError:
 # --- ROS Topics ---
 IMAGE_TOPIC = "/rgb"
 TASK_DESCRIPTION_TOPIC = "/task"
-JOINT_STATES_TOPIC = "/joint_states"
-JOINT_COMMAND_TOPIC = "/joint_trajectory_controller/joint_trajectory"
+STATE_TOPIC = "/joint_states"
+ACTION_TOPIC = "/joint_command"
 
 # --- Node and Timing ---
 NODE_NAME = "gr00t_robot_controller_node"
@@ -172,10 +175,10 @@ class Gr00tRobotInferenceClient:
                 arm_action = raw_action_chunk["action.single_arm"]
                 gripper_action = raw_action_chunk["action.gripper"]
 
-                combined_action = np.append(arm_action, gripper_action[:, np.newaxis], axis=1)[5]
+                combined_action = np.append(arm_action, gripper_action[:, np.newaxis], axis=1)
 
-                if combined_action.shape[0] != EXPECTED_JOINT_COUNT:
-                     print(f"Warning: Extracted action has {combined_action.shape[0]} elements," \
+                if combined_action[0].shape[0] != EXPECTED_JOINT_COUNT:
+                     print(f"Warning: Extracted action has {combined_action[0].shape[0]} elements," \
                            f" expected {EXPECTED_JOINT_COUNT}.")
                      # Decide how to handle this - return None, raise error, or try to use?
                      return None
@@ -230,10 +233,10 @@ class RobotControllerNode(Node):
         # --- Subscribers ---
         self.image_subscriber = self.create_subscription(Image, IMAGE_TOPIC, self.image_callback, sensor_qos_profile)
         self.task_subscriber = self.create_subscription(String, TASK_DESCRIPTION_TOPIC, self.task_callback, state_qos_profile)
-        self.joint_state_subscriber = self.create_subscription(JointState, JOINT_STATES_TOPIC, self.joint_state_callback, reliable_qos_profile)
+        self.joint_state_subscriber = self.create_subscription(JointState, STATE_TOPIC, self.joint_state_callback, reliable_qos_profile)
 
         # --- Publisher ---
-        self.joint_command_publisher = self.create_publisher(JointTrajectory, JOINT_COMMAND_TOPIC, reliable_qos_profile)
+        self.joint_command_publisher = self.create_publisher(JointState, ACTION_TOPIC, reliable_qos_profile)
 
         # --- Timer ---
         self.processing_timer = self.create_timer(PROCESSING_TIMER_PERIOD, self.process_and_publish_callback)
@@ -330,29 +333,26 @@ class RobotControllerNode(Node):
             self.get_logger().warn("Failed to extract valid joint commands from inference result. Skipping command publishing.")
             return
 
-        # --- Construct and Publish JointTrajectory Message ---
-        joint_trajectory_msg = JointTrajectory()
-        joint_trajectory_msg.header.stamp = self.get_clock().now().to_msg()
-        # IMPORTANT: Ensure self.joint_names matches the order of next_joint_positions
-        joint_trajectory_msg.joint_names = self.joint_names
+        for joint_actions in next_joint_positions:
+            # --- Construct and Publish Jointstate Message ---
+            joint_cmd_msg = JointState()
+            joint_cmd_msg.header.stamp = self.get_clock().now().to_msg()
+            joint_cmd_msg.name = self.joint_names
+            joint_cmd_msg.position = joint_actions.tolist()
 
-        point = JointTrajectoryPoint()
-        point.positions = list(next_joint_positions) # Convert numpy array to list
-        # Calculate time_from_start based on processing period or desired speed
-        # Using PROCESSING_TIMER_PERIOD implies reaching the target by the next cycle
-        point.time_from_start = rclpy.duration.Duration(seconds=PROCESSING_TIMER_PERIOD * 1.5).to_msg() # Allow a bit more time
+            try:
+                self.joint_command_publisher.publish(joint_cmd_msg)
+                # self.get_logger().info(f"Published joint command: {list(joint_actions)}") # Debug
+                self.last_command_time = current_time # Update time of last successful command
+            except Exception as e:
+                self.get_logger().error(f"Failed to publish joint command: {e}")
+            
+            # 20 hz    
+            sleep(0.05)
+            
 
-        joint_trajectory_msg.points.append(point)
 
-        try:
-            self.joint_command_publisher.publish(joint_trajectory_msg)
-            # self.get_logger().info(f"Published joint command: {list(next_joint_positions)}") # Debug
-            self.last_command_time = current_time # Update time of last successful command
-        except Exception as e:
-            self.get_logger().error(f"Failed to publish joint command: {e}")
-
-        # Optional: Clear the latest image message if you only want to act on new images
-        # self.latest_image_msg = None
+        
 
 
 def main(args=None):
