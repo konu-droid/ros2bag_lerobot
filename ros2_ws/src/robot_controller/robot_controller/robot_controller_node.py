@@ -49,13 +49,9 @@ except ImportError:
 # --- ROS Topics ---
 IMAGE_TOPIC = "/rgb"
 TASK_DESCRIPTION_TOPIC = "/task"
-<<<<<<< HEAD
 STATE_TOPIC = "/joint_states"
 ACTION_TOPIC = "/joint_command"
-=======
-JOINT_STATES_TOPIC = "/joint_states"
-JOINT_COMMAND_TOPIC = "/joint_command"
->>>>>>> 4d7a44b0fcf86a7d9622a5693139e96a60aebeed
+
 
 # --- Node and Timing ---
 NODE_NAME = "gr00t_robot_controller_node"
@@ -241,11 +237,7 @@ class RobotControllerNode(Node):
         self.joint_state_subscriber = self.create_subscription(JointState, STATE_TOPIC, self.joint_state_callback, reliable_qos_profile)
 
         # --- Publisher ---
-<<<<<<< HEAD
         self.joint_command_publisher = self.create_publisher(JointState, ACTION_TOPIC, reliable_qos_profile)
-=======
-        self.joint_command_publisher = self.create_publisher(JointState, JOINT_COMMAND_TOPIC, reliable_qos_profile)
->>>>>>> 4d7a44b0fcf86a7d9622a5693139e96a60aebeed
 
         # --- Timer ---
         self.processing_timer = self.create_timer(PROCESSING_TIMER_PERIOD, self.process_and_publish_callback)
