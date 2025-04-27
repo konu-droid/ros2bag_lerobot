@@ -14,25 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-import numpy as np
-import torch # Import torch
-from typing import Dict, Any, List, Tuple
+# Import sleep to keep the hz of the action publishing
+from time import sleep
+from typing import Any, Dict, List, Tuple
 
-# Import ROS message types
-from sensor_msgs.msg import Image         # For image subscription
-from sensor_msgs.msg import JointState    # For joint state subscription
-from std_msgs.msg import String           # For task description subscription
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+import cv2  # OpenCV for potential resizing/processing
+import numpy as np
+import rclpy
+import torch  # Import torch
 
 # Import CV Bridge for image conversion
 from cv_bridge import CvBridge, CvBridgeError
-import cv2 # OpenCV for potential resizing/processing
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 
-# Import sleep to keep the hz of the action publishing
-from time import sleep
+# Import ROS message types
+from sensor_msgs.msg import Image  # For image subscription
+from sensor_msgs.msg import JointState  # For joint state subscription
+from std_msgs.msg import String  # For task description subscription
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 # Import the Gr00t inference client library
 try:

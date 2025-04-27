@@ -40,10 +40,10 @@ Before running the conversion script, you **must** update the configuration vari
 
 # Path to your ROS bag file OR a directory containing multiple bag files
 # Example: '/path/to/my_robot/bags/' or '/path/to/single/bagfile.db3'
-BAG_FILE_PATH = '/home/konu/Documents/groot/ros2bags/so100_cup_side'
+BAG_INPUT_PATH = '/home/konu/Documents/groot/ros2bags/'
 
 # Directory where the converted Lerobot dataset will be saved
-OUTPUT_DATASET_DIR = './isaac_so100_groot_dataset_side'
+OUTPUT_DATASET_DIR = './isaac_groot_custom_dataset'
 
 # A descriptive name for your dataset (used in info.json)
 DATASET_NAME = "so_100_isaacsim"
@@ -69,8 +69,16 @@ STATE_TOPIC = '/joint_states'
 # Example: '/joint_command', '/arm_controller/joint_trajectory', etc.
 ACTION_TOPIC = '/joint_command'
 
-# (Optional) Task description topic (if you recorded tasks)
-# TASK_TOPIC = '/task_description' # Uncomment and set if used
+# ask description topic 
+TASK_DESCRIPTION_TOPIC = '/task' # NEW: Topic for task description string
+
+# --- TF Frames ---
+# Set the correct frames for your setup
+IMAGE_FRAME = 'Camera_link' # Frame ID of the sensor publishing images (used for video name)
+WORLD_FRAME = 'Base' # World/reference frame for target pose calculations (if used)
+
+# Key for the main camera in modality.json and video folder name
+VIDEO_KEY = "webcam" # Matches the example 'observation.images.webcam'
 
 # --- Modality Configuration (Advanced) ---
 # Define how state and action joints are grouped.

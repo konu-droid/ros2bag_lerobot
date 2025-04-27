@@ -1,8 +1,9 @@
+import os
+
 import datasets
 import numpy as np
-from PIL import Image # Example if you have image observations
-import os
-from tqdm.auto import tqdm # For progress bars
+from PIL import Image  # Example if you have image observations
+from tqdm.auto import tqdm  # For progress bars
 
 # --- 1. Prepare Your Raw Data (Example Placeholder) ---
 # Assume you have data loaded into a structure like this:
