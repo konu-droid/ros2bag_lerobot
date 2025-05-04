@@ -631,8 +631,8 @@ class DatasetFormatter:
             
         _action_modalities = {}
         if len(ACTION_MODALITIES) == 0:
-             _action_modalities["single_arm"] = {"start": 0, "end": self.state_dim - 1}
-             _action_modalities["gripper"] = {"start": self.state_dim - 1, "end": self.state_dim}
+             _action_modalities["single_arm"] = {"start": 0, "end": self.action_dim - 1}
+             _action_modalities["gripper"] = {"start": self.action_dim - 1, "end": self.action_dim}
         else:
             _action_modalities = ACTION_MODALITIES
 
